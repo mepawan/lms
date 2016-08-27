@@ -1,0 +1,110 @@
+extends ../layouts/default
+
+include ../mixins/course
+
+block content
+	if !course
+		.jumbotron.text-center
+			h2 Invalid course...
+			p.lead Please check the url and try again
+	else
+		.page-header
+			h1= course.title
+		.row
+			.col-sm-8
+				p: a(href='/course').text-muted &larr; back to the courses list
+				hr
+				article
+					header
+						if course.banner.exists
+							div(style="margin-bottom: 20px; margin-top: 20px;")
+								img(src=course._.banner.fit(750,500)).img-responsive
+						div
+							p.text-muted.text-small Created 
+								if course.publishedDate
+									| on 
+									time(datetime=course.publishedDate)=course._.publishedDate.format('MMMM Do, YYYY')
+								if course.categories && course.categories.length
+									|  in 
+									each cat, cat_i in course.categories
+										a(href='/courses/' + cat.key)= cat.name
+										if cat_i < course.categories.length - 1
+											| , 
+										else
+											|  
+								if course.author
+									| by #{course.author.name.full}
+						hr
+						!= course.content.full
+						hr
+						h2 Sections
+						if sections.length
+							div(class="panel-group" id="accordion")
+								each sec in sections
+									div(class="panel panel-default")
+										div(class="panel-heading")
+											h4(class="panel-title")
+												a(data-toggle="collapse" data-parent="#accordion" href='#' + sec.slug id="acc_"+sec.slug)
+													=sec.title
+													if sec.lessions.length
+													span.badge= sec.lessions.length
+										div(id=sec.slug, class="panel-collapse collapse")
+											div(class="panel-body")
+													if sec.banner.exists
+														.media-left
+															img(src=sec._.banner.fit(80,80)).media-object
+													.media-body
+														p 
+															!=sec.description
+													.clearfix.clear
+													hr
+													h2 Lessions
+													if sec.lessions.length
+														div(class="panel-group" id="accordion2")
+															each les in sec.lessions
+																div(class="panel panel-default")
+																	div(class="panel-heading")
+																		h4(class="panel-title")
+																			a(data-toggle="collapse" data-parent="#accordion2" href='#' + les.slug id="less_"+les.slug)
+																				=les.title
+																	div(id=les.slug, class="panel-collapse collapse")
+																		div(class="panel-body")
+																			if les.banner.exists
+																				.media-left
+																					img(src=les._.banner.fit(80,80)).media-object
+																			.media-body
+																				p 
+																					!=les.content
+																				.clearfix.clear
+													else 
+														div(style="margin-bottom: 20px; margin-top: 20px;") Lessions not found
+						else 
+							div(style="margin-bottom: 20px; margin-top: 20px;") Sections not found
+							
+			.col-sm-4
+				if sections.length
+					.lead.text-muted Sections
+					ul.nav.nav-pills.nav-stacked
+						//-li(class=!section ? 'active' : null)
+						//-	a(href='/course/'+filters.course) All
+						each sec in sections
+							li(role="presentation" class=section && section.id === sec.id ? 'active' : null)
+								a(href='javascript:void(0);', class="side-sec", data-slug=sec.slug)
+									=sec.title
+									if sec.lessions.length
+									span.badge.pull-right= sec.lessions.length
+									
+				else 
+					div(style="margin-bottom: 20px; margin-top: 20px;") Sections not found
+
+block page-js
+	script.
+		jQuery(function($) {
+			jQuery('.side-sec').click(function(e){
+				var slg = jQuery(this).attr('data-slug');
+				jQuery('#accordion .panel-heading a#acc_'+slg).click();
+				jQuery('html, body').animate({
+					scrollTop: $('a#acc_'+slg).offset().top
+				}, 2000);
+			});
+		});

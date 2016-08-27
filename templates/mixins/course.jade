@@ -1,0 +1,19 @@
+mixin course(course)
+	article(data-ks-editable=editable(user, { list: 'Course', id: course.id })).media
+		.media-left
+			a(href='/course/' + course.slug)
+				if course.banner.exists
+					img(src=course._.banner.fit(80,80)).media-object
+				else
+					img(src="http://placehold.it/80x80").media-object
+		.media-body
+			h3.media-heading
+				a(href='/course/' + course.slug)= course.title
+			if course.publishedDate || course.author
+				p.text-muted.text-small
+					if course.publishedDate
+						time= course._.publishedDate.format('MMMM Do, YYYY')
+						|  
+					if course.author
+						span by #{course.author.name.full}
+			!= course.content.brief

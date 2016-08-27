@@ -1,0 +1,57 @@
+extends ../layouts/default
+
+include ../mixins/course
+block content
+	.page-header
+		h1=category ? 'Courses - ' + category.name : 'Courses'
+	.row
+		.col-sm-8
+			if filters.category && !category
+				h3 Invalid Category.
+			else
+				if courses.results.length
+					if courses.totalPages > 1
+						.lead.text-muted Showing 
+							strong #{courses.first}
+							|  to 
+							strong #{courses.last}
+							|  of 
+							strong #{courses.total}
+							|  courses
+					else
+						.lead.text-muted Showing #{utils.plural(courses.results.length, '* course')}
+					.blog
+						each course in courses.results
+							+course(course)
+					if courses.totalPages > 1
+						ul.pagination
+							if courses.previous
+								li: a(href='?page=' + courses.previous): span.glyphicon.glyphicon-chevron-left
+							else
+								li.disabled: a(href='?page=' + 1): span.glyphicon.glyphicon-chevron-left
+							each p, i in courses.pages
+								li(class=courses.currentPage === p ? 'active' : null)
+									a(href='?page=' + (p === '...' ? (i ? courses.totalPages : 1) : p ))= p
+							if courses.next
+								li: a(href='?courses=' + courses.next): span.glyphicon.glyphicon-chevron-right
+							else
+								li.disabled: a(href='?page=' + courses.totalPages): span.glyphicon.glyphicon-chevron-right
+				else
+					if category
+						.jumbotron.text-center
+							h3(style="margin-bottom:0;margin-top:0;") No courses in the category #{category.name}.
+					else
+						.jumbotron.text-center
+							h3(style="margin-bottom:0;margin-top:0;") There are no courses yet.
+		.col-sm-4
+			if categories.length
+				.lead.text-muted Categories
+				ul.nav.nav-pills.nav-stacked
+					li(class=!category ? 'active' : null)
+						a(href='/blog') All
+					each cat in categories
+						li(role="presentation" class=category && category.id === cat.id ? 'active' : null)
+							a(href='/courses/' + cat.key)
+								=cat.name
+								if cat.CourseCount
+									span.badge.pull-right= cat.CourseCount
